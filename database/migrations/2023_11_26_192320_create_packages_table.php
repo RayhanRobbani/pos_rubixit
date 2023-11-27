@@ -21,6 +21,7 @@ return new class extends Migration
             $table->integer("location_limit");
             $table->float("monthly_fee", 8,2);
             $table->float("setup_fee", 8,2);
+            $table->boolean("is_active")->default(0);
             $table->timestamps();
         });
     }

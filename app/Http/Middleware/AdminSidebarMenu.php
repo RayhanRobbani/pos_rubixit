@@ -31,7 +31,7 @@ class AdminSidebarMenu
 
             // SuperAdmin
             if (auth()->user()->can('superadmin')) {
-                $menu->url(action([\App\Http\Controllers\SuperAdmin\SuperAdminController::class, 'index']), __('lang_v1.superadmin'), ['icon' => 'fa fas fa-hdd', 'active' => request()->segment(1) == 'superadmin'])->order(1);
+                $menu->url(action([\App\Http\Controllers\SuperAdmin\SuperAdminController::class, 'index']), __('superadmin.superadmin'), ['icon' => 'fa fas fa-hdd', 'active' => request()->segment(1) == 'superadmin'])->order(1);
             }
 
             //Home

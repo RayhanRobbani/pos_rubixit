@@ -3,10 +3,33 @@
 namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
+use App\Package;
+use App\System;
+use App\Utils\BusinessUtil;
+use App\Utils\ModuleUtil;
 use Illuminate\Http\Request;
 
 class PackageController extends Controller
 {
+    /**
+     * All Utils instance.
+     *
+     */
+    protected $businessUtil;
+    protected $moduleUtil;
+
+    /**
+     * Constructor
+     *
+     * @param ProductUtils $product
+     * @return void
+     */
+    public function __construct(BusinessUtil $businessUtil, ModuleUtil $moduleUtil)
+    {
+        $this->businessUtil = $businessUtil;
+        $this->moduleUtil = $moduleUtil;
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -14,10 +37,22 @@ class PackageController extends Controller
      */
     public function index()
     {
-        if (! auth()->user()->can('superadmin')) {
+        if (!auth()->user()->can('superadmin')) {
             abort(403, 'Unauthorized action.');
         }
+        $packages = Package::paginate(20);
 
+        //Get all module permissions and convert them into name => label
+        $permissions = $this->moduleUtil->getModuleData('superadmin_package');
+        $permission_formatted = [];
+        foreach ($permissions as $permission) {
+            foreach ($permission as $details) {
+                $permission_formatted[$details['name']] = $details['label'];
+            }
+        }
+
+        return view('super_admin.packages.index')
+            ->with(compact('packages', 'permission_formatted'));
         //
     }
 
@@ -28,11 +63,16 @@ class PackageController extends Controller
      */
     public function create()
     {
-        if (! auth()->user()->can('superadmin')) {
+        if (!auth()->user()->can('superadmin')) {
             abort(403, 'Unauthorized action.');
         }
 
         //
+        $intervals = ['days' => __('lang_v1.days'), 'months' => __('lang_v1.months'), 'years' => __('lang_v1.years')];
+        $currency = System::getCurrency();
+        $permissions = $this->moduleUtil->getModuleData('superadmin_package');
+        return view('super_admin.packages.create')
+            ->with(compact('intervals', 'currency', 'permissions'));
     }
 
     /**
@@ -43,11 +83,37 @@ class PackageController extends Controller
      */
     public function store(Request $request)
     {
-        if (! auth()->user()->can('superadmin')) {
+        if (!auth()->user()->can('superadmin')) {
             abort(403, 'Unauthorized action.');
         }
-
         //
+        try {
+            $input = $request->only(['name', 'location_limit', 'user_limit', 'product_limit','monthly_fee','setup_fee' ]);
+            $currency = System::getCurrency();
+            $input['setup_fee'] = $this->businessUtil->num_uf($input['setup_fee'], $currency);
+            $input['name']=$request->name;
+            $input['location_limit']=$request->location_limit;
+            $input['user_limit']=$request->user_limit;
+            $input['product_limit']=$request->product_limit;
+            $input['monthly_fee']=$request->monthly_fee;
+            $input['setup_fee']=$request->setup_fee;
+            $input['is_active'] = empty($input['is_active']) ? 0 : 1;
+            $package = new Package;
+            $package->fill($input);
+            $package->save();
+
+            $output = ['success' => 1, 'msg' => __('lang_v1.success')];
+        } catch (\Exception $e) {
+            \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+
+            $output = ['success' => 0,
+                'msg' => __('messages.something_went_wrong'),
+            ];
+        }
+
+        return redirect()
+            ->route('package.index')
+            ->with('status', $output);
     }
 
     /**
@@ -58,7 +124,7 @@ class PackageController extends Controller
      */
     public function show($id)
     {
-        if (! auth()->user()->can('superadmin')) {
+        if (!auth()->user()->can('superadmin')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -73,7 +139,7 @@ class PackageController extends Controller
      */
     public function edit($id)
     {
-        if (! auth()->user()->can('superadmin')) {
+        if (!auth()->user()->can('superadmin')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -89,7 +155,7 @@ class PackageController extends Controller
      */
     public function update(Request $request, $id)
     {
-        if (! auth()->user()->can('superadmin')) {
+        if (!auth()->user()->can('superadmin')) {
             abort(403, 'Unauthorized action.');
         }
 
@@ -104,10 +170,10 @@ class PackageController extends Controller
      */
     public function destroy($id)
     {
-        if (! auth()->user()->can('superadmin')) {
+        if (!auth()->user()->can('superadmin')) {
             abort(403, 'Unauthorized action.');
         }
-        
+
         //
     }
 }

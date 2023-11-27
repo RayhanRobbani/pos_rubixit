@@ -74,7 +74,6 @@ class System extends Model
         $c_id = System::where('key', 'app_currency_id')
                 ->first()
                 ->value;
-
         $currency = Currency::find($c_id);
 
         return $currency;
