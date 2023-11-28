@@ -15,7 +15,7 @@
             <!-- Collect the nav links, forms, and other content for toggling -->
             <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                 <ul class="nav navbar-nav">
-                    <li @if(request()->segment(1) == 'superadmin' && request()->segment(2) == 'business') class="active" @endif><a href="#">@lang('superadmin.all_business')</a></li>
+                    <li @if(request()->segment(1) == 'superadmin' && request()->segment(2) == 'business') class="active" @endif><a href="{{route('business.index')}}">@lang('superadmin.all_business')</a></li>
 
                  <li @if(request()->segment(1) == 'superadmin' && request()->segment(2) == 'superadmin-subscription') class="active" @endif><a href="#">@lang('superadmin.subscription')</a></li> 
 
@@ -25,11 +25,11 @@
 
                     <li @if(request()->segment(1) == 'superadmin' && request()->segment(2) == 'communicator') class="active" @endif><a href="#">@lang('superadmin.communicator')</a></li>
 
-                    <li @if(request()->segment(1) == 'superadmin' && request()->segment(2) == 'affiliate') class="active" @endif><a href="#">Affiliate</a></li>
+                    <li @if(request()->segment(1) == 'superadmin' && request()->segment(2) == 'affiliate') class="active" @endif><a href="#">@lang('superadmin.affiliate')</a></li>
 
-                    <li @if(request()->segment(1) == 'superadmin' && request()->segment(2) == 'notice') class="active" @endif><a href="#">Notice</a></li>
+                    <li @if(request()->segment(1) == 'superadmin' && request()->segment(2) == 'notice') class="active" @endif><a href="#">@lang('superadmin.notice')</a></li>
 
-                    <li @if(request()->segment(1) == 'superadmin' && request()->segment(2) == 'superadmin-message') class="active" @endif><a href="#">SMS</a></li> 
+                    <li @if(request()->segment(1) == 'superadmin' && request()->segment(2) == 'superadmin-message') class="active" @endif><a href="#">@lang('superadmin.SMS')</a></li> 
                 </ul>
 
             </div><!-- /.navbar-collapse -->

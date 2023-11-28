@@ -1,9 +1,10 @@
 <?php
 
 use App\Http\Controllers\Install;
+use App\Http\Controllers\SuperAdmin\BusinessController as SuperadminBusinessController;
 use App\Http\Controllers\Restaurant;
-use Illuminate\Support\Facades\Route;
 // use App\Http\Controllers\Auth;
+use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SellController;
@@ -22,7 +23,6 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\SellPosController;
 use App\Http\Controllers\TaxRateController;
 use App\Http\Controllers\BusinessController;
-use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DiscountController;
 use App\Http\Controllers\GroupTaxController;
 use App\Http\Controllers\PurchaseController;
@@ -62,7 +62,7 @@ use App\Http\Controllers\SalesCommissionAgentController;
 use App\Http\Controllers\DashboardConfiguratorController;
 use App\Http\Controllers\SuperAdmin\SuperAdminController;
 use App\Http\Controllers\CombinedPurchaseReturnController;
-
+use App\Http\Controllers\SuperAdmin\BusinessController as sup_busnesscontroller;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -72,7 +72,7 @@ use App\Http\Controllers\CombinedPurchaseReturnController;
 | routes are loaded by the RouteServiceProvider within a group which
 | contains the "web" middleware group. Now create something great!
 |
-*/
+ */
 
 include_once 'install_r.php';
 
@@ -130,7 +130,6 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('/user/update-password', [UserController::class, 'updatePassword'])->name('user.updatePassword');
     Route::post('/user/update-language', [UserController::class, 'updateLanguage'])->name('user.updateLanguage');
     // Route::post('/user/update-language', 'UserController@updateLanguage')->name('user.updateLanguage');
-
 
     Route::resource('brands', BrandController::class);
 
@@ -520,15 +519,24 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone'])
 });
 
 // SuperAdmin
-Route::middleware(['superadmin','setData', 'auth', 'SetSessionData', 'language', 'timezone', 'AdminSidebarMenu', 'CheckUserLogin'])->group(function () {
+Route::middleware(['superadmin', 'setData', 'auth', 'SetSessionData', 'language', 'timezone', 'AdminSidebarMenu', 'CheckUserLogin'])->group(function () {
     Route::get('/superadmin', [SuperAdminController::class, 'index'])->name('superadmin.index');
-    
+
     // package
     Route::get('superadmin/packages', [PackageController::class, 'index'])->name('package.index');
     Route::get('superadmin/create', [PackageController::class, 'create'])->name('package.create');
     Route::post('superadmin/store', [PackageController::class, 'store'])->name('package.store');
-    Route::get('superadmin/edit', [PackageController::class, 'edit'])->name('package.edit');
-    Route::get('superadmin/update', [PackageController::class, 'update'])->name('package.update');
-    Route::get('superadmin/delete', [PackageController::class, 'destroy'])->name('package.destroy');
+    Route::get('superadmin/edit/{id}', [PackageController::class, 'edit'])->name('package.edit');
+    Route::put('superadmin/update/{id}', [PackageController::class, 'update'])->name('package.update');
+    Route::get('superadmin/delete/{id}', [PackageController::class, 'destroy'])->name('package.destroy');
 
+//    All Business
+    Route::prefix('superadmin')->group(function () {
+        Route::get('superadmin/business', [sup_busnesscontroller::class,'index'])->name('business.index');
+        Route::get('superadmin/create', [sup_busnesscontroller::class, 'create'])->name('business.create');
+        Route::post('superadmin/store', [sup_busnesscontroller::class, 'store'])->name('business.store');
+        Route::get('superadmin/edit/{id}', [sup_busnesscontroller::class, 'edit'])->name('business.edit');
+        Route::put('superadmin/update/{id}', [sup_busnesscontroller::class, 'update'])->name('business.update');
+        Route::get('superadmin/delete/{id}', [sup_busnesscontroller::class, 'destroy'])->name('business.destroy');
+    });
 });
