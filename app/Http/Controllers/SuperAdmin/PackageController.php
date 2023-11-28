@@ -88,16 +88,16 @@ class PackageController extends Controller
         }
         //
         try {
-            $input = $request->only(['name', 'location_limit', 'user_limit', 'product_limit','monthly_fee','setup_fee' ]);
+            $input = $request->only(['name', 'location_limit', 'user_limit', 'product_limit', 'monthly_fee', 'setup_fee']);
             $currency = System::getCurrency();
             $input['setup_fee'] = $this->businessUtil->num_uf($input['setup_fee'], $currency);
-            $input['name']=$request->name;
-            $input['location_limit']=$request->location_limit;
-            $input['user_limit']=$request->user_limit;
-            $input['product_limit']=$request->product_limit;
-            $input['monthly_fee']=$request->monthly_fee;
-            $input['setup_fee']=$request->setup_fee;
-            $input['is_active'] = empty($input['is_active']) ? 0 : 1;
+            $input['name'] = $request->name;
+            $input['location_limit'] = $request->location_limit;
+            $input['user_limit'] = $request->user_limit;
+            $input['product_limit'] = $request->product_limit;
+            $input['monthly_fee'] = $request->monthly_fee;
+            $input['setup_fee'] = $request->setup_fee;
+            $input['is_active'] = $request->is_active;
             $package = new Package;
             $package->fill($input);
             $package->save();
@@ -105,12 +105,10 @@ class PackageController extends Controller
             $output = ['success' => 1, 'msg' => __('lang_v1.success')];
         } catch (\Exception $e) {
             \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
-
             $output = ['success' => 0,
                 'msg' => __('messages.something_went_wrong'),
             ];
         }
-
         return redirect()
             ->route('package.index')
             ->with('status', $output);
@@ -143,7 +141,12 @@ class PackageController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        //
+        //package
+        $package = Package::findOrFail($id);
+        $currency = System::getCurrency();
+        $permissions = $this->moduleUtil->getModuleData('superadmin_package');
+        return view('super_admin.packages.edit', compact('package', 'permissions', 'currency'));
+
     }
 
     /**
@@ -159,7 +162,23 @@ class PackageController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
-        //
+        $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        try {
+            $package = Package::findOrFail($id);
+            $package->update($request->all());
+
+            $output = ['success' => 1, 'msg' => __('superadmin.update_success')];
+            return redirect()->route('package.index')->with('status', $output);
+        } catch (\Exception $e) {
+            \Log::emergency("File:" . $e->getFile() . "Line:" . $e->getLine() . "Message:" . $e->getMessage());
+            // Handle any exceptions that occur during the update
+            $output = ['success' => 0, 'msg' => __('superadmin.update_failed')];
+            return redirect()->back()->withInput()->withErrors($output); 
+        }
+
     }
 
     /**
@@ -173,7 +192,11 @@ class PackageController extends Controller
         if (!auth()->user()->can('superadmin')) {
             abort(403, 'Unauthorized action.');
         }
-
+        $package = Package::find($id);
+        $package->delete();
+        $output = ['success' => 1, 'msg' => __('superadmin.delete_success')];
+        // Redirect to the package index with the success message
+        return redirect()->route('package.index')->with('status', $output);
         //
     }
 }
