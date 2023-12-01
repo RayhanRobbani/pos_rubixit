@@ -15,6 +15,8 @@ use Illuminate\Http\Response;
 use App\VariationLocationDetails;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Controller;
+use App\Subscription;
+use DateInterval;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Permission;
@@ -51,140 +53,192 @@ class BusinessController extends Controller
             abort(403, 'Unauthorized action.');
         }
 
+        $businesses = Business::all();
+        foreach ($businesses as $business) {
+            // dd($business->subscriptions->where('status', 'Active')->last());
+        }
+
         if (request()->ajax()) {
-            $date_today = \Carbon::today();
-            $businesses = Business::leftjoin('subscriptions AS s', function ($join) use ($date_today) {
-                $join->on('business.id', '=', 's.business_id')
-                    // ->whereDate('s.start_date', '<=', $date_today)
-                    ->whereDate('s.end_date', '>=', $date_today)
-                    ->where('s.status', 'approved');
-            })
-                ->leftjoin('packages as p', 's.package_id', '=', 'p.id')
-                ->leftjoin('business_locations as bl', 'business.id', '=', 'bl.business_id')
-                ->leftjoin('users as u', 'u.id', '=', 'business.owner_id')
-                ->leftjoin('users as creator', 'creator.id', '=', 'business.created_by')
-                ->select(
-                    'business.id',
-                    'business.name',
-                    'business.owner_id',
-                    DB::raw("CONCAT(COALESCE(u.surname, ''), ' ', COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, '')) as owner_name"),
-                    'u.email as owner_email',
-                    'u.contact_number',
-                    'u.username as username',
-                    'bl.mobile',
-                    'bl.alternate_number',
-                    'bl.city',
-                    'bl.state',
-                    'bl.country',
-                    'bl.landmark',
-                    'bl.zip_code',
-                    'business.is_active',
-                    'p.name as package_name',
-                    'business.created_at',
-                    DB::raw("CONCAT(COALESCE(creator.surname, ''), ' ', COALESCE(creator.first_name, ''), ' ', COALESCE(creator.last_name, '')) as biz_creator")
-                )->groupBy('business.id');
+            // $date_today = \Carbon::today();
+            $businesses = Business::all();
 
-            if (!empty(request()->package_id)) {
-                $businesses->where('p.id', request()->package_id);
-            }
-
-            $subscription_status = request()->subscription_status;
-            if ($subscription_status == 30) {
-                $businesses->whereDate('s.end_date', '<=', \Carbon::today()->addDays(30));
-            } else if ($subscription_status == 7) {
-                $businesses->whereDate('s.end_date', '<=', \Carbon::today()->addDays(7));
-            } else if ($subscription_status == 3) {
-                $businesses->whereDate('s.end_date', '<=', \Carbon::today()->addDays(3));
-            } elseif ($subscription_status == 'expired') {
-                $businesses->where(function ($q) {
-                    $q->whereDate('s.end_date', '<', \Carbon::today())
-                        ->orWhereNull('s.end_date');
-                });
-            } else if ($subscription_status == 'subscribed') {
-                $businesses->whereNotNull('s.start_date');
-            }
-
-            $is_active = request()->is_active;
-            if ($is_active == 'active') {
-                $businesses->where('business.is_active', 1);
-            } else if ($is_active == 'inactive') {
-                $businesses->where('business.is_active', 0);
-            }
-            $last_transaction_date = request()->last_transaction_date;
-            $query = $this->filterTransactionDate($businesses, $last_transaction_date, '>');
-
-            $no_transaction_since = request()->no_transaction_since;
-
-            $query = $this->filterTransactionDate($businesses, $no_transaction_since, '=');
-
-            return Datatables::of($query)
-                ->addColumn('address', '{{$city}}, {{$state}}, {{$country}} {{$landmark}}, {{$zip_code}}')
-                ->addColumn('business_contact_number', '{{$mobile}} @if(!empty($alternate_number)), {{$alternate_number}}@endif')
-                ->editColumn('is_active', '@if($is_active == 1) <span class="label bg-green">@lang("business.is_active")</span> @else <span class="label bg-gray">@lang("lang_v1.inactive")</span> @endif')
-                ->addColumn('action', function ($row) {
-                    $html = '<a href="' .
-                        action("App\Http\Controllers\SuperAdmin\BusinessController@show", [$row->id]) . '"
-                                class="btn btn-info btn-xs">' . __('superadmin::lang.manage') . '</a>
-                            <button type="button" class="btn btn-primary btn-xs btn-modal" data-href="' . action('\Modules\Superadmin\Http\Controllers\SuperadminSubscriptionsController@create', ['business_id' => $row->id]) . '" data-container=".view_modal">'
-                        . __('superadmin::lang.add_subscription') . '</button>';
-
-                    if ($row->is_active == 1) {
-                        $html .= ' <a href="' . action('App\Http\Controllers\SuperAdmin\BusinessController@toggleActive', [$row->id, 0]) . '"
-                                    class="btn btn-danger btn-xs link_confirmation">' . __('lang_v1.deactivate') . '
-                                </a>';
+            return Datatables::of($businesses)
+                ->addColumn('created_at', function ($row) {
+                    return date_format($row->owner->created_at, 'd-M-Y') . '<br>' . date_format($row->owner->created_at, 'h:i A');
+                })
+                ->addColumn('business_id', function ($row) {
+                    return $row->id;
+                })
+                ->addColumn('business_name', function ($row) {
+                    return $row->name ? $row->name : '';
+                })
+                ->addColumn('owner', function ($row) {
+                    return $row->owner ? $row->owner->first_name . ' ' . $row->owner->last_name : '';
+                })
+                ->addColumn('contact_no', function ($row) {
+                    return $row->locations ? $row->locations->first()->mobile : '';
+                })
+                ->addColumn('login_credentials', function ($row) {
+                    return $row->owner ? 'Username: ' . $row->owner->username . '<br> Password: ' . $row->owner->password_in_text : '';
+                })
+                ->addColumn('allow_login', function ($row) {
+                    if ($row->owner->allow_login) {
+                        return 'Yes';
                     } else {
-                        $html .= ' <a href="' . action('App\Http\Controllers\SuperAdmin\BusinessController@toggleActive', [$row->id, 1]) . '"
-                                    class="btn btn-success btn-xs link_confirmation">' . __('lang_v1.activate') . '
-                                </a>';
+                        return 'No';
                     }
-
-                    if (request()->session()->get('user.business_id') != $row->id) {
-                        $html .= ' <a href="' . action('App\Http\Controllers\SuperAdmin\BusinessController@destroy', [$row->id]) . '"
-                                    class="btn btn-danger btn-xs delete_business_confirmation">' . __('messages.delete') . '</a>';
-                    }
-
-                    // $html .= '<form action="'.action('\Modules\Superadmin\Http\Controllers\BusinessController@client_login').'" method="POST" > <input type="hidden" name="_token" value="'.csrf_token().'">  <input type="hidden" name="username" value="'.$row->username.'">  <input type="hidden" name="password" value="'.$row->pass_show.'"> <button class="btn btn-info btn-xs" type="submit">Login</button></form>';
-
-                    $html .= ' <a href="' . action('App\Http\Controllers\SuperAdmin\BusinessController@client_login', [$row->owner_id]) . '"
-                            class="btn btn-info btn-xs">' . __('Login') . '</a>';
-
-                    return $html;
                 })
-                ->filterColumn('owner_name', function ($query, $keyword) {
-                    $query->whereRaw("CONCAT(COALESCE(surname, ''), ' ', COALESCE(first_name, ''), ' ', COALESCE(last_name, '')) like ?", ["%{$keyword}%"]);
+                ->addColumn('active_subscription', function ($row) {
+                    $active_subscription = $row->subscriptions->where('status', 'Active')->last();
+
+                    return $active_subscription ? $active_subscription->package->name . '<br>' . $active_subscription->activation_date . ' - ' . $active_subscription->expiry_date : '';
                 })
-                ->filterColumn('address', function ($query, $keyword) {
-                    $query->whereRaw("CONCAT(COALESCE(city, ''), ', ', COALESCE(state, ''), ', ', COALESCE(country, ''), ', ', COALESCE(landmark, ''), ', ', COALESCE(zip_code, '')) like ?", ["%{$keyword}%"]);
-                })
-                ->filterColumn('business_contact_number', function ($query, $keyword) {
-                    $query->where(function ($q) use ($keyword) {
-                        $q->where('bl.mobile', 'like', "%{$keyword}%")
-                            ->orWhere('bl.alternate_number', 'like', "%{$keyword}%");
-                    });
-                })
-                ->addColumn('current_subscription', '{{$package_name ?? ""}} @if(!empty($start_date) && !empty($end_date)) ({{@format_date($start_date)}} - {{@format_date($end_date)}}) @endif')
                 ->addColumn('last_subscription', function ($row) {
+                    $last_subscription = $row->subscriptions->where('status', '!=', 'Pending')->last();
 
-                    $packageName = $row->package_name ?? "";
-                    $startSubscriptionDate = $row->start_date ? date('d-m-Y', strtotime($row->start_date)) : null;
-                    $endSubscriptionDate = $row->end_date ? date('d-m-Y', strtotime($row->end_date)) : null;
+                    return $last_subscription ? $last_subscription->package->name . '<br>' . $last_subscription->activation_date . ' - ' . $last_subscription->expiry_date : '';
+                })
+                ->addColumn('actions', function ($row) {
+                    $html = '<a href="' . action("App\Http\Controllers\SuperAdmin\BusinessController@add_subscription", [$row->id]) . '"class="btn btn-success btn-xs m-2">' . __('Add Subscription') . '</a>';
+                    $html .= '<a href="' . action("App\Http\Controllers\ManageUserController@signInAsUser", [$row->owner->id]) . '"class="btn btn-info btn-xs m-2">' . __('Login') . '</a>';
 
-                    if (!empty($startSubscriptionDate)) {
-                        return "$packageName ($startSubscriptionDate - $endSubscriptionDate)";
-                    } else {
-                        return __('');
-                    }
-                })
-                ->editColumn('created_at', '{{@format_datetime($created_at)}}')
-                ->addColumn('setup_fee', function ($row) {
-                    return $row->package ? $row->package->setup_fee : '';
-                })
-                ->addColumn('creds', function ($row) {
-                    $html = $row->username . '<br>' . $row->pass_show;
                     return $html;
                 })
-                ->rawColumns(['action', 'is_active', 'created_at', 'creds'])
+                ->rawColumns(['created_at', 'login_credentials', 'active_subscription', 'last_subscription', 'actions'])
                 ->make(true);
+
+            // $businesses = Business::leftjoin('subscriptions AS s', function ($join) use ($date_today) {
+            //     $join->on('business.id', '=', 's.business_id')
+            //         // ->whereDate('s.start_date', '<=', $date_today)
+            //         ->whereDate('s.end_date', '>=', $date_today)
+            //         ->where('s.status', 'approved');
+            // })
+            //     ->leftjoin('packages as p', 's.package_id', '=', 'p.id')
+            //     ->leftjoin('business_locations as bl', 'business.id', '=', 'bl.business_id')
+            //     ->leftjoin('users as u', 'u.id', '=', 'business.owner_id')
+            //     ->leftjoin('users as creator', 'creator.id', '=', 'business.created_by')
+            //     ->select(
+            //         'business.id',
+            //         'business.name',
+            //         'business.owner_id',
+            //         DB::raw("CONCAT(COALESCE(u.surname, ''), ' ', COALESCE(u.first_name, ''), ' ', COALESCE(u.last_name, '')) as owner_name"),
+            //         'u.email as owner_email',
+            //         'u.contact_number',
+            //         'u.username as username',
+            //         'bl.mobile',
+            //         'bl.alternate_number',
+            //         'bl.city',
+            //         'bl.state',
+            //         'bl.country',
+            //         'bl.landmark',
+            //         'bl.zip_code',
+            //         'business.is_active',
+            //         'p.name as package_name',
+            //         'business.created_at',
+            //         DB::raw("CONCAT(COALESCE(creator.surname, ''), ' ', COALESCE(creator.first_name, ''), ' ', COALESCE(creator.last_name, '')) as biz_creator")
+            //     )->groupBy('business.id');
+
+            // if (!empty(request()->package_id)) {
+            //     $businesses->where('p.id', request()->package_id);
+            // }
+
+            // $subscription_status = request()->subscription_status;
+            // if ($subscription_status == 30) {
+            //     $businesses->whereDate('s.end_date', '<=', \Carbon::today()->addDays(30));
+            // } else if ($subscription_status == 7) {
+            //     $businesses->whereDate('s.end_date', '<=', \Carbon::today()->addDays(7));
+            // } else if ($subscription_status == 3) {
+            //     $businesses->whereDate('s.end_date', '<=', \Carbon::today()->addDays(3));
+            // } elseif ($subscription_status == 'expired') {
+            //     $businesses->where(function ($q) {
+            //         $q->whereDate('s.end_date', '<', \Carbon::today())
+            //             ->orWhereNull('s.end_date');
+            //     });
+            // } else if ($subscription_status == 'subscribed') {
+            //     $businesses->whereNotNull('s.start_date');
+            // }
+
+            // $is_active = request()->is_active;
+            // if ($is_active == 'active') {
+            //     $businesses->where('business.is_active', 1);
+            // } else if ($is_active == 'inactive') {
+            //     $businesses->where('business.is_active', 0);
+            // }
+            // $last_transaction_date = request()->last_transaction_date;
+            // $query = $this->filterTransactionDate($businesses, $last_transaction_date, '>');
+
+            // $no_transaction_since = request()->no_transaction_since;
+
+            // $query = $this->filterTransactionDate($businesses, $no_transaction_since, '=');
+
+            // return Datatables::of($query)
+            //     ->addColumn('address', '{{$city}}, {{$state}}, {{$country}} {{$landmark}}, {{$zip_code}}')
+            //     ->addColumn('business_contact_number', '{{$mobile}} @if(!empty($alternate_number)), {{$alternate_number}}@endif')
+            //     ->editColumn('is_active', '@if($is_active == 1) <span class="label bg-green">@lang("business.is_active")</span> @else <span class="label bg-gray">@lang("lang_v1.inactive")</span> @endif')
+            //     ->addColumn('action', function ($row) {
+            // $html = '<a href="' .
+            //     action("App\Http\Controllers\SuperAdmin\BusinessController@show", [$row->id]) . '"
+            //             class="btn btn-info btn-xs">' . __('superadmin::lang.manage') . '</a>
+            //         <button type="button" class="btn btn-primary btn-xs btn-modal" data-href="' . action('\Modules\Superadmin\Http\Controllers\SuperadminSubscriptionsController@create', ['business_id' => $row->id]) . '" data-container=".view_modal">'
+            //     . __('superadmin::lang.add_subscription') . '</button>';
+
+            //         if ($row->is_active == 1) {
+            //             $html .= ' <a href="' . action('App\Http\Controllers\SuperAdmin\BusinessController@toggleActive', [$row->id, 0]) . '"
+            //                         class="btn btn-danger btn-xs link_confirmation">' . __('lang_v1.deactivate') . '
+            //                     </a>';
+            //         } else {
+            //             $html .= ' <a href="' . action('App\Http\Controllers\SuperAdmin\BusinessController@toggleActive', [$row->id, 1]) . '"
+            //                         class="btn btn-success btn-xs link_confirmation">' . __('lang_v1.activate') . '
+            //                     </a>';
+            //         }
+
+            //         if (request()->session()->get('user.business_id') != $row->id) {
+            //             $html .= ' <a href="' . action('App\Http\Controllers\SuperAdmin\BusinessController@destroy', [$row->id]) . '"
+            //                         class="btn btn-danger btn-xs delete_business_confirmation">' . __('messages.delete') . '</a>';
+            //         }
+
+            //         // $html .= '<form action="'.action('\Modules\Superadmin\Http\Controllers\BusinessController@client_login').'" method="POST" > <input type="hidden" name="_token" value="'.csrf_token().'">  <input type="hidden" name="username" value="'.$row->username.'">  <input type="hidden" name="password" value="'.$row->pass_show.'"> <button class="btn btn-info btn-xs" type="submit">Login</button></form>';
+
+            //         $html .= ' <a href="' . action('App\Http\Controllers\SuperAdmin\BusinessController@client_login', [$row->owner_id]) . '"
+            //                 class="btn btn-info btn-xs">' . __('Login') . '</a>';
+
+            //         return $html;
+            //     })
+            //     ->filterColumn('owner_name', function ($query, $keyword) {
+            //         $query->whereRaw("CONCAT(COALESCE(surname, ''), ' ', COALESCE(first_name, ''), ' ', COALESCE(last_name, '')) like ?", ["%{$keyword}%"]);
+            //     })
+            //     ->filterColumn('address', function ($query, $keyword) {
+            //         $query->whereRaw("CONCAT(COALESCE(city, ''), ', ', COALESCE(state, ''), ', ', COALESCE(country, ''), ', ', COALESCE(landmark, ''), ', ', COALESCE(zip_code, '')) like ?", ["%{$keyword}%"]);
+            //     })
+            //     ->filterColumn('business_contact_number', function ($query, $keyword) {
+            //         $query->where(function ($q) use ($keyword) {
+            //             $q->where('bl.mobile', 'like', "%{$keyword}%")
+            //                 ->orWhere('bl.alternate_number', 'like', "%{$keyword}%");
+            //         });
+            //     })
+            //     ->addColumn('current_subscription', '{{$package_name ?? ""}} @if(!empty($start_date) && !empty($end_date)) ({{@format_date($start_date)}} - {{@format_date($end_date)}}) @endif')
+            //     ->addColumn('last_subscription', function ($row) {
+
+            //         $packageName = $row->package_name ?? "";
+            //         $startSubscriptionDate = $row->start_date ? date('d-m-Y', strtotime($row->start_date)) : null;
+            //         $endSubscriptionDate = $row->end_date ? date('d-m-Y', strtotime($row->end_date)) : null;
+
+            //         if (!empty($startSubscriptionDate)) {
+            //             return "$packageName ($startSubscriptionDate - $endSubscriptionDate)";
+            //         } else {
+            //             return __('');
+            //         }
+            //     })
+            //     ->editColumn('created_at', '{{@format_datetime($created_at)}}')
+            //     ->addColumn('setup_fee', function ($row) {
+            //         return $row->package ? $row->package->setup_fee : '';
+            //     })
+            //     ->addColumn('creds', function ($row) {
+            //         $html = $row->username . '<br>' . $row->pass_show;
+            //         return $html;
+            //     })
+            //     ->rawColumns(['action', 'is_active', 'created_at', 'creds'])
+            //     ->make(true);
         }
 
         $business_id = request()->session()->get('user.business_id');
@@ -207,7 +261,7 @@ class BusinessController extends Controller
             'this_year' => __('superadmin.this_year'),
             'last_year' => __('superadmin.last_year')
         ];
-     
+
         return view('super_admin.business.index')
             ->with(compact('business_id', 'packages', 'subscription_statuses', 'last_transaction_date'));
     }
@@ -246,7 +300,6 @@ class BusinessController extends Controller
      */
     public function create()
     {
-      
         if (!auth()->user()->can('superadmin')) {
             abort(403, 'Unauthorized action.');
         }
@@ -254,14 +307,14 @@ class BusinessController extends Controller
         $currencies = $this->businessUtil->allCurrencies();
         $timezone_list = $this->businessUtil->allTimeZones();
         $accounting_methods = $this->businessUtil->allAccountingMethods();
-        
+
         $months = [];
         for ($i = 1; $i <= 12; $i++) {
             $months[$i] = __('business.months.' . $i);
         }
-        
+
         $is_admin = true;
-        
+
         $packages = Package::active()->orderby('id')->pluck('name', 'id');
         // $gateways = $this->_payment_gateways();
 
@@ -273,7 +326,6 @@ class BusinessController extends Controller
                 'months',
                 'is_admin',
                 'packages',
-                // 'gateways'
             ));
     }
 
@@ -575,8 +627,6 @@ class BusinessController extends Controller
 
     public function client_login($id)
     {
-
-
         $this->businessUtil->activityLog(auth()->user(), 'logout');
 
         request()->session()->flush();
@@ -589,4 +639,37 @@ class BusinessController extends Controller
         return redirect('/home');
     }
 
+    public function add_subscription($id)
+    {
+        if (!auth()->user()->can('superadmin')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $packages = Package::where('is_active', 1)->pluck('name', 'id');
+
+        return view('super_admin.business.add_subscription', compact('id', 'packages'));
+    }
+
+    public function store_subscription(Request $request, $id)
+    {
+        if (!auth()->user()->can('superadmin')) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $user = User::find($id);
+        Subscription::create([
+            'business_id' => $user->business->id,
+            'package_id' => $request->package,
+            'activation_date' => now(),
+            'expiry_date' => date_add(now(), DateInterval::createFromDateString('30 days')),
+            'status' => 'Active',
+        ]);
+
+        $output = [
+            'success' => 1,
+            'msg' => 'Subscription activated successfully!',
+        ];
+
+        return redirect()->route('business.index')->with('status', $output);
+    }
 }

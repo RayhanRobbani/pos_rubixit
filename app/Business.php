@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 class Business extends Model
 {
@@ -63,6 +64,22 @@ class Business extends Model
     }
 
     /**
+     * Get the user list
+     */
+    public function users()
+    {
+        return $this->hasMany(\App\User::class);
+    }
+
+    /**
+     * Get the product list
+     */
+    public function products()
+    {
+        return $this->hasMany(\App\Product::class);
+    }
+
+    /**
      * Get the Business currency.
      */
     public function currency()
@@ -91,7 +108,19 @@ class Business extends Model
      */
     public function subscriptions()
     {
-        return $this->hasMany('\Modules\Superadmin\Entities\Subscription');
+        return $this->hasMany(\App\Subscription::class);
+    }
+
+    /**
+     * Get the Business subscriptions.
+     */
+    public function active_subscription()
+    {
+        return $this->hasOne(Subscription::class)->ofMany([
+            'id' => 'max',
+        ], function (Builder $query) {
+            $query->where('status', 'Active');
+        });
     }
 
     /**
@@ -115,7 +144,7 @@ class Business extends Model
      */
     public static function update_business($business_id, $details)
     {
-        if (! empty($details)) {
+        if (!empty($details)) {
             Business::where('id', $business_id)
                 ->update($details);
         }
@@ -124,8 +153,8 @@ class Business extends Model
     public function getBusinessAddressAttribute()
     {
         $location = $this->locations->first();
-        $address = $location->landmark.', '.$location->city.
-        ', '.$location->state.'<br>'.$location->country.', '.$location->zip_code;
+        $address = $location->landmark . ', ' . $location->city .
+            ', ' . $location->state . '<br>' . $location->country . ', ' . $location->zip_code;
 
         return $address;
     }

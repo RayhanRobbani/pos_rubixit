@@ -1,7 +1,7 @@
 @inject('request', 'Illuminate\Http\Request')
 <!-- Main Header -->
 <header class="main-header no-print">
-    <a href="{{ route('home') }}" class="logo">
+    <a href="{{ route('home') }}" class="logo" style="position: fixed;">
 
         <span class="logo-lg">{{ Session::get('business.name') }} <i class="fa fa-circle text-success"
                 id="online_indicator"></i></span>
@@ -146,8 +146,9 @@
                 request()->session()->get('user.language'),
                 [
                     'id' => 'lang_select',
+                    'class' => 'btn-success',
                     'style' =>
-                        'border: none; padding:8px 10px; border-radius:3px; margin-left:4px; background:#15DF6E; color:white;font-weight: bold; font-size:16px',
+                        'border: none; padding:8px 10px; border-radius:3px; margin-left:4px; color:white;font-weight: bold; font-size:16px',
                 ],
             ) !!}
             {!! Form::close() !!}

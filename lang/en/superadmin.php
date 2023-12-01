@@ -15,7 +15,7 @@ return [
     'add_package'=>'Add Package',
     'user_limit'=>'User Limit',
     'infinite_help'=>'Infinite_help',
-    'user_limit'=>'User Limit',
+    'location_limit'=>'Business Location Limit',
     'product_limit'=>'Product Limit',
     'monthly_fee'=>'Monthly Fee',
     'tooltip_pkg_price'=>'Package Price',

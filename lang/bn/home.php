@@ -11,6 +11,7 @@ return [
     |
     */
     'home' => 'ড্যাশবোর্ড',
+    'dashboard' => "ড্যাশবোর্ড",
     'welcome_message' => 'স্বাগতম: ,',
     'total_sell' => 'মোট বিক্রয়',
     'total_purchase' => 'মোট ক্রয়',

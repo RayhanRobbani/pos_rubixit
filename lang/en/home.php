@@ -11,6 +11,7 @@ return [
     |
     */
     'home' => 'Home',
+    'dashboard' => "Dashboard",
     'welcome_message' => 'Welcome :name,',
     'total_sell' => 'Total Sales',
     'total_purchase' => 'Total purchase',

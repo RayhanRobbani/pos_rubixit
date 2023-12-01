@@ -538,5 +538,7 @@ Route::middleware(['superadmin', 'setData', 'auth', 'SetSessionData', 'language'
         Route::get('superadmin/edit/{id}', [sup_busnesscontroller::class, 'edit'])->name('business.edit');
         Route::put('superadmin/update/{id}', [sup_busnesscontroller::class, 'update'])->name('business.update');
         Route::get('superadmin/delete/{id}', [sup_busnesscontroller::class, 'destroy'])->name('business.destroy');
+        Route::get('superadmin/add_subscription/{id}', [sup_busnesscontroller::class, 'add_subscription'])->name('business.add_subscription');
+        Route::post('superadmin/store_subscription/{id}', [sup_busnesscontroller::class, 'store_subscription'])->name('business.store_subscription');
     });
 });

@@ -44,7 +44,7 @@
 
                     <div class="col-sm-6">
                         <div class="form-group">
-                            {!! Form::label('location_limit', __('superadmin.user_limit') . ':') !!}
+                            {!! Form::label('location_limit', __('superadmin.location_limit') . ':') !!}
                             {!! Form::number('location_limit', null, ['class' => 'form-control', 'required', 'min' => 0]) !!}
 
                             <span class="help-block">
