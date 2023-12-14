@@ -1445,6 +1445,8 @@ return [
     'invalid_date_format_at' => 'Invalid date format at row :row',
     'net' => 'Net',
     'net_home_tooltip' => 'NET = TOTAL SALES - INVOICE DUE - EXPENSE',
+    'net_profit' => 'Net Profit',
+    'net_profit_tooltip' => 'Gross Profit + (Total sell shipping charge + Sell additional expenses + Total Stock Recovered + Total Purchase discount + Total sell round off ) - ( Total Stock Adjustment + Total Expense + Total purchase shipping charge + Total transfer shipping charge + Purchase additional expenses + Total Sell discount + Total customer reward )',
     'ledger_discount' => 'Ledger discount',
     'edit_discount' => 'Edit Discount',
     'discount_for' => 'Discount for',

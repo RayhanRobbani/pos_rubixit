@@ -3,3 +3,9 @@ task scheduling for subscriptions
 translations
 show subscription list
 show active subscription to user
+
+# 1 Dec 2023
+invoice footer -> Software developed by Rubix IT
+
+# 2 Dec 2023
+package -> input validity

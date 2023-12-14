@@ -260,8 +260,12 @@ class HomeController extends Controller
             $output['total_expense'] = $transaction_totals['total_expense'];
 
             //NET = TOTAL SALES - INVOICE DUE - EXPENSE
-            $output['net'] = $output['total_sell'] - $output['invoice_due'] - $output['total_expense'];
+            // $output['net'] = $output['total_sell'] - $output['invoice_due'] - $output['total_expense'];
 
+            // NET PROFIT
+            $profit_loss_details = $this->transactionUtil->getProfitLossDetails($business_id, $location_id, $start, $end);
+            $output['net_profit'] = $profit_loss_details['net_profit'];
+            
             return $output;
         }
     }

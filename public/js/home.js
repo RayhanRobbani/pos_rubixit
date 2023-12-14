@@ -183,7 +183,7 @@ function update_statistics(start, end) {
     $('.total_expense').html(loader);
     $('.total_purchase_return').html(loader);
     $('.total_sell_return').html(loader);
-    $('.net').html(loader);
+    $('.net_profit').html(loader);
     $.ajax({
         method: 'get',
         url: '/home/get-totals',
@@ -207,7 +207,7 @@ function update_statistics(start, end) {
             $('.total_srp').html(__currency_trans_from_en(data.total_sell_return_paid, true));
             $('.total_pr').html(__currency_trans_from_en(data.total_purchase_return, true));
             $('.total_prp').html(__currency_trans_from_en(data.total_purchase_return_paid, true));
-            $('.net').html(__currency_trans_from_en(data.net, true));
+            $('.net_profit').html(__currency_trans_from_en(data.net_profit, true));
         },
     });
 }

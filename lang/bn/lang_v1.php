@@ -642,6 +642,8 @@ return [
     'total_discount' => 'মোট ছাড়',
     'net_price' => 'নিট মূল্য',
     'net' => 'মোট লাভ',
+    'net_profit' => 'মোট লাভ',
+    'net_profit_tooltip' => 'Gross Profit + (Total sell shipping charge + Sell additional expenses + Total Stock Recovered + Total Purchase discount + Total sell round off ) - ( Total Stock Adjustment + Total Expense + Total purchase shipping charge + Total transfer shipping charge + Purchase additional expenses + Total Sell discount + Total customer reward )',
     'select_same_for_all_rows' => 'সব পণ্যের জন্য একই মান নির্বাচন করুন',
     'edited' => 'সম্পাদিত',
     'total_sell_return' => 'মোট বিক্রয় ফেরত',

@@ -15,7 +15,7 @@ return [
     'welcome_message' => 'Welcome :name,',
     'total_sell' => 'Total Sales',
     'total_purchase' => 'Total purchase',
-    'invoice_due' => 'Invoice due',
+    'invoice_due' => 'Sales due',
     'purchase_due' => 'Purchase due',
     'today' => 'Today',
     'this_week' => 'This Week',

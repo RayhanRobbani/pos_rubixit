@@ -16,6 +16,10 @@
             <span class="sr-only">Toggle navigation</span>
         </a>
 
+        <div class="m-8 pull-left hidden-xs" style="color: #ffffff; font-size: 18px; margin-top: 19px;">
+            <strong>{{ now()->format('d M Y') }}</strong>
+        </div>
+
         @if (Module::has('Superadmin'))
             @includeIf('superadmin::layouts.partials.active_subscription')
         @endif
@@ -27,13 +31,13 @@
 
         <!-- Navbar Right Menu -->
         <div class="navbar-custom-menu">
-
             @if (Module::has('Essentials'))
                 @includeIf('essentials::layouts.partials.header_part')
             @endif
 
             <div class="btn-group">
-                <button id="header_shortcut_dropdown" type="button" style="font-size: 15px; margin-right: 5px; border-radius:3px;"
+                <button id="header_shortcut_dropdown" type="button"
+                    style="font-size: 15px; margin-right: -2px; border-radius:3px;"
                     class="btn btn-success dropdown-toggle btn-flat pull-left m-8 btn-sm mt-10" data-toggle="dropdown"
                     aria-haspopup="true" aria-expanded="false">
                     <i class="fas fa-plus-circle fa-lg"></i>
@@ -59,7 +63,8 @@
                     @endif
                 </ul>
             </div>
-            <button id="btnCalculator" title="@lang('lang_v1.calculator')" type="button" style="font-size: 15px; margin-right: 5px; border-radius:3px;"
+            <button id="btnCalculator" title="@lang('lang_v1.calculator')" type="button"
+                style="font-size: 15px; margin-right: 5px; border-radius:3px;"
                 class="btn btn-success btn-flat pull-left m-8 btn-sm mt-10 popover-default hidden-xs"
                 data-toggle="popover" data-trigger="click" data-content='@include('layouts.partials.calculator')' data-html="true"
                 data-placement="bottom">
@@ -120,8 +125,9 @@
             @endif
 
             @can('profit_loss_report.view')
-                <button style="font-size: 16px; margin-right: 5px; border-radius:3px;" type="button" id="view_todays_profit" title="{{ __('home.todays_profit') }}" data-toggle="tooltip"
-                    data-placement="bottom" class="btn btn-success btn-flat pull-left m-8 btn-sm mt-10">
+                <button style="font-size: 16px; margin: 5px 0; border-radius:3px;" type="button" id="view_todays_profit"
+                    title="{{ __('home.todays_profit') }}" data-toggle="tooltip" data-placement="bottom"
+                    class="btn btn-success btn-flat pull-left m-8 btn-sm mt-10">
                     <strong>@lang('home.todays_profit')</strong>
                 </button>
             @endcan
@@ -152,11 +158,6 @@
                 ],
             ) !!}
             {!! Form::close() !!}
-
-            <div class="m-8 pull-left mt-15 hidden-xs" style="color: #ffffff;"><strong>{{ @format_date('now') }}</strong>
-            </div>
-
-
 
             <ul class="nav navbar-nav">
                 @include('layouts.partials.header-notifications')
