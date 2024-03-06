@@ -44,4 +44,5 @@ return [
     'price' => 'মূল্য',
     'activate' => 'সক্রিয়',
     'deactivate' => 'নিষ্ক্রিয়',
+    'no_default' => 'কোনো ডিফল্ট নেই',
 ];

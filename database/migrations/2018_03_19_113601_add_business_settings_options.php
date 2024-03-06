@@ -20,6 +20,7 @@ return new class extends Migration
             $table->boolean('enable_price_tax')->default(true)->after('enable_sub_category');
             $table->boolean('enable_purchase_status')->nullable()->default(true)->after('enable_price_tax');
             $table->integer('default_unit')->nullable()->after('enable_purchase_status');
+            $table->integer('default_supplier')->nullable()->after('default_unit');
         });
     }
 

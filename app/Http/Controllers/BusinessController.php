@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Business;
+use App\Contact;
 use App\Currency;
 use App\Notifications\TestEmailNotification;
 use App\Subscription;
@@ -324,6 +325,17 @@ class BusinessController extends Controller
 
         $units_dropdown = Unit::forDropdown($business_id, true);
 
+        $query = Contact::where('business_id', $business_id)
+            ->active();
+        $suppliers = $query->select(
+            'contacts.id',
+            DB::raw('IF(name="", supplier_business_name, name) as text')
+        )
+            ->onlySuppliers()
+            ->get();
+        $suppliers_dropdown = $suppliers->pluck('text', 'id');
+        $suppliers_dropdown->prepend(__('messages.no_default'), '');
+
         $date_formats = Business::date_formats();
 
         $shortcuts = json_decode($business->keyboard_shortcuts, true);
@@ -350,7 +362,7 @@ class BusinessController extends Controller
 
         $payment_types = $this->moduleUtil->payment_types(null, false, $business_id);
 
-        return view('business.settings', compact('business', 'currencies', 'tax_rates', 'timezone_list', 'months', 'accounting_methods', 'commission_agent_dropdown', 'units_dropdown', 'date_formats', 'shortcuts', 'pos_settings', 'modules', 'theme_colors', 'email_settings', 'sms_settings', 'mail_drivers', 'allow_superadmin_email_settings', 'custom_labels', 'common_settings', 'weighing_scale_setting', 'payment_types'));
+        return view('business.settings', compact('business', 'currencies', 'tax_rates', 'timezone_list', 'months', 'accounting_methods', 'commission_agent_dropdown', 'units_dropdown', 'suppliers_dropdown', 'date_formats', 'shortcuts', 'pos_settings', 'modules', 'theme_colors', 'email_settings', 'sms_settings', 'mail_drivers', 'allow_superadmin_email_settings', 'custom_labels', 'common_settings', 'weighing_scale_setting', 'payment_types'));
     }
 
     /**
@@ -373,7 +385,7 @@ class BusinessController extends Controller
 
             $business_details = $request->only([
                 'name', 'start_date', 'currency_id', 'tax_label_1', 'tax_number_1', 'tax_label_2', 'tax_number_2', 'default_profit_percent', 'default_sales_tax', 'default_sales_discount', 'sell_price_tax', 'sku_prefix', 'time_zone', 'fy_start_month', 'accounting_method', 'transaction_edit_days', 'sales_cmsn_agnt', 'item_addition_method', 'currency_symbol_placement', 'on_product_expiry',
-                'stop_selling_before', 'default_unit', 'expiry_type', 'date_format',
+                'stop_selling_before', 'default_unit', 'default_supplier', 'expiry_type', 'date_format',
                 'time_format', 'ref_no_prefixes', 'theme_color', 'email_settings',
                 'sms_settings', 'rp_name', 'amount_for_unit_rp',
                 'min_order_total_for_rp', 'max_rp_per_order',

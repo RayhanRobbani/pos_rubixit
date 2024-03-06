@@ -59,6 +59,7 @@ return [
     'total_sell_discount' => 'Total Sell discount',
     'updated_succesfully' => 'Updated Successfully',
     'default_unit' => 'Default Unit',
+    'default_supplier' => 'Default Supplier',
     'enable_brand' => 'Enable Brands',
     'enable_category' => 'Enable Categories',
     'enable_sub_category' => 'Enable Sub-Categories',
