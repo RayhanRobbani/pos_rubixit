@@ -63,6 +63,8 @@ use App\Http\Controllers\DashboardConfiguratorController;
 use App\Http\Controllers\SuperAdmin\SuperAdminController;
 use App\Http\Controllers\CombinedPurchaseReturnController;
 use App\Http\Controllers\SuperAdmin\BusinessController as sup_busnesscontroller;
+use Illuminate\Support\Facades\Artisan;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -79,6 +81,17 @@ include_once 'install_r.php';
 Route::middleware(['setData'])->group(function () {
     Route::get('/', function () {
         return view('welcome');
+    });
+
+    Route::get('/clean', function () {
+        Artisan::call('optimize:clear');
+        Artisan::call('config:clear');
+        Artisan::call('route:clear');
+        Artisan::call('view:clear');
+        Artisan::call('config:cache');
+        Artisan::call('route:cache');
+        Artisan::call('view:cache');
+        return 'okay';
     });
 
     Auth::routes();
@@ -132,8 +145,6 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     // Route::post('/user/update-language', 'UserController@updateLanguage')->name('user.updateLanguage');
 
     Route::resource('brands', BrandController::class);
-
-    Route::resource('payment-account', 'PaymentAccountController');
 
     Route::resource('tax-rates', TaxRateController::class);
 
@@ -498,7 +509,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
 
 //common route
 Route::middleware(['auth'])->group(function () {
-    Route::get('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('logout');
+    Route::get('/logout', [App\Http\Controllers\Auth\LoginController::class, 'logout'])->name('log-out');
 });
 
 Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone'])->group(function () {
@@ -530,9 +541,9 @@ Route::middleware(['superadmin', 'setData', 'auth', 'SetSessionData', 'language'
     Route::put('superadmin/update/{id}', [PackageController::class, 'update'])->name('package.update');
     Route::get('superadmin/delete/{id}', [PackageController::class, 'destroy'])->name('package.destroy');
 
-//    All Business
+    //    All Business
     Route::prefix('superadmin')->group(function () {
-        Route::get('superadmin/business', [sup_busnesscontroller::class,'index'])->name('business.index');
+        Route::get('superadmin/business', [sup_busnesscontroller::class, 'index'])->name('business.index');
         Route::get('superadmin/create', [sup_busnesscontroller::class, 'create'])->name('business.create');
         Route::post('superadmin/store', [sup_busnesscontroller::class, 'store'])->name('business.store');
         Route::get('superadmin/edit/{id}', [sup_busnesscontroller::class, 'edit'])->name('business.edit');

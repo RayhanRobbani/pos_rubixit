@@ -22,4 +22,6 @@ Homestead.json
 /.vagrant
 .phpunit.result.cache
 
+# CUSTOM PATHS
 storage/logs
+storage/framework/cache

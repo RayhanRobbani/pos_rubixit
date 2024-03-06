@@ -14,7 +14,7 @@ return [
     */
 
     'paths' => [
-        base_path('custom_views'),
+        base_path('/'),
         resource_path('views'),
     ],
 
