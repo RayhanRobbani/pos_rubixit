@@ -101,9 +101,10 @@
                         $search_disable = false;
                     @endphp
                 @else
-                    @php$default_location = null;
-                                                                                                                                                                        $search_disable = true;
-                                                                                                                                            @endphp ?> ?> ?> ?> ?> ?>
+                    @php
+                        $default_location = null;
+                        $search_disable = true;
+                    @endphp
                 @endif
                 <div class="col-sm-3">
                     <div class="form-group">
