@@ -1544,4 +1544,12 @@ return [
     'print_custom_lebel' => 'Print Custom Label',
     'show_vat_text' => 'Show + VAT / TAX',
     'language_updated_successfully' => 'Language Updated Successfully',
+    'product_damage_report' => 'Product Damage Report',
+    'damage_return' => 'Damage Return',
+    'damage_return_added_success' => 'Damage return added successfully',
+    'list_damage_return' => 'List Damage Return',
+    'all_damage_returns' => 'All Damage Returns',
+    'damage_return_details' => 'Damage Return Details',
+    'total_damage_return' => 'Total Damage Return',
+    'total_damage_return_inc_tax' => 'Total Damage Return Including Tax',
 ];

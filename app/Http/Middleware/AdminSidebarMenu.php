@@ -248,7 +248,14 @@ class AdminSidebarMenu
                             $sub->url(
                                 action([\App\Http\Controllers\PurchaseReturnController::class, 'index']),
                                 __('lang_v1.list_purchase_return'),
-                                ['icon' => 'fa fas fa-undo', 'active' => request()->segment(1) == 'purchase-return']
+                                ['icon' => 'fa fas fa-undo', 'active' => request()->segment(1) == 'purchase-return' && request()->segment(2) != 'add-damage']
+                            );
+                        }
+                        if (auth()->user()->can('purchase.update')) {
+                            $sub->url(
+                                action([\App\Http\Controllers\PurchaseReturnController::class, 'index_damage']),
+                                __('lang_v1.list_damage_return'),
+                                ['icon' => 'fa fas fa-undo', 'active' => request()->segment(1) == 'purchase-damage-return' || request()->segment(2) == 'add-damage']
                             );
                         }
                     },
@@ -592,6 +599,12 @@ class AdminSidebarMenu
                                 action([\App\Http\Controllers\ReportController::class, 'getproductPurchaseReport']),
                                 __('lang_v1.product_purchase_report'),
                                 ['icon' => 'fa fas fa-arrow-circle-down', 'active' => request()->segment(2) == 'product-purchase-report']
+                            );
+
+                            $sub->url(
+                                action([\App\Http\Controllers\ReportController::class, 'getproductDamageReport']),
+                                __('lang_v1.product_damage_report'),
+                                ['icon' => 'fa fas fa-arrow-circle-down', 'active' => request()->segment(2) == 'product-damage-report']
                             );
 
                             $sub->url(

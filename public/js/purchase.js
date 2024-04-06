@@ -573,6 +573,7 @@ $(document).ready(function() {
             var total_purchase = 0;
             var total_due = 0;
             var total_purchase_return_due = 0;
+            var total_purchase_damage_return_due = 0;
             for (var r in data){
                 total_purchase += $(data[r].final_total).data('orig-value') ? 
                 parseFloat($(data[r].final_total).data('orig-value')) : 0;
@@ -582,11 +583,14 @@ $(document).ready(function() {
 
                 total_purchase_return_due += payment_due_obj.find('.purchase_return').data('orig-value') ? 
                 parseFloat(payment_due_obj.find('.purchase_return').data('orig-value')) : 0;
+                total_purchase_damage_return_due += payment_due_obj.find('.purchase_damage_return').data('orig-value') ? 
+                parseFloat(payment_due_obj.find('.purchase_damage_return').data('orig-value')) : 0;
             }
 
             $('.footer_purchase_total').html(__currency_trans_from_en(total_purchase));
             $('.footer_total_due').html(__currency_trans_from_en(total_due));
             $('.footer_total_purchase_return_due').html(__currency_trans_from_en(total_purchase_return_due));
+            $('.footer_total_purchase_damage_return_due').html(__currency_trans_from_en(total_purchase_damage_return_due));
             $('.footer_status_count').html(__count_status(data, 'status'));
             $('.footer_payment_status_count').html(__count_status(data, 'payment_status'));
         },

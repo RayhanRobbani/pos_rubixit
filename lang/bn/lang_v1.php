@@ -1314,4 +1314,12 @@ return [
     'count' => 'গণনা',
     'denomination_add_help_text' => 'সেটিংস -> বিজনেস সেটিংস -> পিওএস -> ক্যাশ ডিনোনিমেশনে ডিনোমিনেশন যুক্ত করুন',
     'order_dates' => 'অর্ডারের তারিখ',
+    'product_damage_report' => 'পণ্য ডেমেজ রিপোর্ট',
+    'damage_return' => 'ডেমেজ রিটার্ন',
+    'damage_return_added_success' => 'ডেমেজ রিটার্ন সফলভাবে যোগ করা হয়েছে',
+    'list_damage_return' => 'ডেমেজ রিটার্ন তালিকা',
+    'all_damage_returns' => 'সব ডেমেজ রিটার্ন',
+    'damage_return_details' => 'ডেমেজ রিটার্ন বিস্তারিত',
+    'total_damage_return' => 'মোট ডেমেজ রিটার্ন',
+    'total_damage_return_inc_tax' => 'কর সহ মোট ডেমেজ রিটার্ন',
 ];

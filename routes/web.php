@@ -297,6 +297,7 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::post('/reports/stock-expiry-update', [ReportController::class, 'updateStockExpiryReport'])->name('updateStockExpiryReport');
     Route::get('/reports/customer-group', [ReportController::class, 'getCustomerGroup']);
     Route::get('/reports/product-purchase-report', [ReportController::class, 'getproductPurchaseReport']);
+    Route::get('/reports/product-damage-report', [ReportController::class, 'getproductDamageReport']);
     Route::get('/reports/product-sell-grouped-by', [ReportController::class, 'productSellReportBy']);
     Route::get('/reports/product-sell-report', [ReportController::class, 'getproductSellReport']);
     Route::get('/reports/product-sell-report-with-purchase', [ReportController::class, 'getproductSellReportWithPurchase']);
@@ -406,6 +407,11 @@ Route::middleware(['setData', 'auth', 'SetSessionData', 'language', 'timezone', 
     Route::get('/purchase-return/create', [CombinedPurchaseReturnController::class, 'create']);
     Route::get('/purchase-return/add/{id}', [PurchaseReturnController::class, 'add']);
     Route::resource('/purchase-return', PurchaseReturnController::class)->except('create');
+    Route::get('/purchase-damage-return', [PurchaseReturnController::class, 'index_damage']);
+    Route::get('/purchase-return/add-damage/{id}', [PurchaseReturnController::class, 'add_damage']);
+    Route::post('/purchase-return/store-damage', [PurchaseReturnController::class, 'store_damage']);
+    Route::delete('/purchase-damage-return/{id}', [PurchaseReturnController::class, 'destroy_damage']);
+    Route::get('/purchase-damage-return/{id}', [PurchaseReturnController::class, 'show_damage']);
 
     Route::get('/discount/activate/{id}', [DiscountController::class, 'activate']);
     Route::post('/discount/mass-deactivate', [DiscountController::class, 'massDeactivate']);

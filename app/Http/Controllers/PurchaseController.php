@@ -155,6 +155,11 @@ class PurchaseController extends Controller
                             '"><i class="fas fa-undo" aria-hidden="true" ></i>' . __('lang_v1.purchase_return') . '</a></li>';
                     }
 
+                    if (auth()->user()->can('purchase.update')) {
+                        $html .= '<li><a href="' . action([\App\Http\Controllers\PurchaseReturnController::class, 'add_damage'], [$row->id]) .
+                            '" class="text-danger"><i class="fas fa-undo" aria-hidden="true" ></i>' . __('lang_v1.damage_return') . '</a></li>';
+                    }
+
                     if (auth()->user()->can('purchase.update') || auth()->user()->can('purchase.update_status')) {
                         $html .= '<li><a href="#" data-purchase_id="' . $row->id .
                             '" data-status="' . $row->status . '" class="update_status"><i class="fas fa-edit" aria-hidden="true" ></i>' . __('lang_v1.update_status') . '</a></li>';
@@ -174,7 +179,7 @@ class PurchaseController extends Controller
                 })
                 ->removeColumn('id')
                 ->editColumn('ref_no', function ($row) {
-                    return !empty($row->return_exists) ? $row->ref_no . ' <small class="label bg-red label-round no-print" title="' . __('lang_v1.some_qty_returned') . '"><i class="fas fa-undo"></i></small>' : $row->ref_no;
+                    return !empty($row->return_exists) || !empty($row->damage_exists) ? $row->ref_no . ' <small class="label bg-red label-round no-print" title="' . __('lang_v1.some_qty_returned') . '"><i class="fas fa-undo"></i></small>' : $row->ref_no;
                 })
                 ->editColumn(
                     'final_total',
@@ -199,9 +204,12 @@ class PurchaseController extends Controller
                     $due = $row->final_total - $row->amount_paid;
                     $due_html = '<strong>' . __('lang_v1.purchase') . ':</strong> <span class="payment_due" data-orig-value="' . $due . '">' . $this->transactionUtil->num_f($due, true) . '</span>';
 
+                    $return_due = ($row->amount_return + $row->amount_damage) - $row->return_paid;
                     if (!empty($row->return_exists)) {
-                        $return_due = $row->amount_return - $row->return_paid;
-                        $due_html .= '<br><strong>' . __('lang_v1.purchase_return') . ':</strong> <a href="' . action([\App\Http\Controllers\TransactionPaymentController::class, 'show'], [$row->return_transaction_id]) . '" class="view_purchase_return_payment_modal"><span class="purchase_return" data-orig-value="' . $return_due . '">' . $this->transactionUtil->num_f($return_due, true) . '</span></a>';
+                        $due_html .= '<br><strong>' . __('lang_v1.purchase_return') . ':</strong> <a href="' . action([\App\Http\Controllers\TransactionPaymentController::class, 'show'], [$row->return_transaction_id]) . '" class="view_purchase_return_payment_modal"><span class="purchase_return" data-orig-value="' . $return_due - $row->amount_damage . '">' . $this->transactionUtil->num_f($return_due - $row->amount_damage, true) . '</span></a>';
+                    }
+                    if (!empty($row->damage_exists)) {
+                        $due_html .= '<br><strong>' . __('lang_v1.damage_return') . ':</strong> <a href="' . action([\App\Http\Controllers\TransactionPaymentController::class, 'show'], [$row->damage_return_transaction_id]) . '" class="view_purchase_return_payment_modal"><span class="purchase_damage_return" data-orig-value="' . $return_due - $row->amount_return . '">' . $this->transactionUtil->num_f($return_due - $row->amount_return, true) . '</span></a>';
                     }
 
                     return $due_html;
@@ -304,7 +312,7 @@ class PurchaseController extends Controller
         )
             ->onlySuppliers()
             ->get();
-            
+
         return view('purchase.create')
             ->with(compact('taxes', 'orderStatuses', 'business_locations', 'currency_details', 'default_purchase_status', 'customer_groups', 'types', 'shortcuts', 'payment_line', 'payment_types', 'accounts', 'bl_attributes', 'common_settings', 'suppliers'));
     }

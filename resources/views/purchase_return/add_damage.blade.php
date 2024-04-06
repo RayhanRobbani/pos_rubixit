@@ -1,17 +1,17 @@
 @extends('layouts.app')
-@section('title', __('lang_v1.purchase_return'))
+@section('title', __('lang_v1.damage_return'))
 
 @section('content')
 
     <!-- Content Header (Page header) -->
     <section class="content-header">
-        <h1>@lang('lang_v1.purchase_return')</h1>
+        <h1>@lang('lang_v1.damage_return')</h1>
     </section>
 
     <!-- Main content -->
     <section class="content">
         {!! Form::open([
-            'url' => action([\App\Http\Controllers\PurchaseReturnController::class, 'store']),
+            'url' => action([\App\Http\Controllers\PurchaseReturnController::class, 'store_damage']),
             'method' => 'post',
             'id' => 'purchase_return_form',
         ]) !!}
@@ -79,7 +79,7 @@
                                         $purchase_line->quantity -
                                         $purchase_line->quantity_sold -
                                         $purchase_line->quantity_adjusted -
-                                        $purchase_line->quantity_damage_returned;
+                                        $purchase_line->quantity_returned;
                                 @endphp
                                 <tr>
                                     <td>{{ $loop->iteration }}</td>
@@ -105,7 +105,7 @@
                                             }
                                         @endphp
                                         <input type="text" name="returns[{{ $purchase_line->id }}]"
-                                            value="{{ @format_quantity($purchase_line->quantity_returned) }}"
+                                            value="{{ @format_quantity($purchase_line->quantity_damage_returned) }}"
                                             class="form-control input-sm input_number return_qty input_quantity"
                                             data-rule-abs_digit="{{ $check_decimal }}" data-msg-abs_digit="@lang('lang_v1.decimal_value_not_allowed')"
                                             @if ($purchase_line->product->enable_stock) data-rule-max-value="{{ $qty_available }}"
