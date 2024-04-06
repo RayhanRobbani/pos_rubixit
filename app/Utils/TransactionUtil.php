@@ -4491,7 +4491,6 @@ class TransactionUtil extends Util
         if (in_array('sell_transfer', $transaction_types)) {
             $query->addSelect(
                 DB::raw("SUM(IF(transactions.type='sell_transfer', shipping_charges, 0)) as total_transfer_shipping_charges")
-
             );
         }
 
